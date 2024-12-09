@@ -1,1 +1,1 @@
-# LoginService
+# Quarkus-LoginService
