@@ -45,3 +45,4 @@ nb-configuration.xml
 .certs/
 
 src/main/resources/application.properties
+/src/ressources/
