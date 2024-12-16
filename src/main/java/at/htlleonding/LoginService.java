@@ -8,6 +8,7 @@ import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -30,13 +31,7 @@ public class LoginService {
             || user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
             throw new IllegalArgumentException("Password must not be empty");
         }
-        Argon2 argon2 = Argon2Factory.create();
-
-        String hash = argon2.hash(2, 65536, 1, "password123".toCharArray());
-        hash += generateRandomSalt();
-        hash += System.getenv("PEPPER");
-        user.setPassword(hash);
-
+        user.setPassword(getPassword(user.getPassword()));
         loginRepo.persist(user);
     }
     // Generate a random 16-byte salt and encode it as a Base64 string
@@ -45,6 +40,12 @@ public class LoginService {
         byte[] saltBytes = new byte[16];
         secureRandom.nextBytes(saltBytes);
         return Base64.getEncoder().encodeToString(saltBytes);
+    }
+    private String getPassword(String password) {
+        Argon2 argon2 = Argon2Factory.create();
+        String hash = argon2.hash(2, 65536, 1, password.toCharArray());
+        hash += generateRandomSalt() + System.getenv("PEPPER");
+        return hash;
     }
 
     public boolean checkPassword(String username, String password) {
@@ -55,6 +56,15 @@ public class LoginService {
         }
         Argon2 argon2 = Argon2Factory.create();
         return argon2.verify(user.getPassword(), password.toCharArray());
+    }
+    public void resetPassword(String username) {
+        log.info("Resetting password for user: {}", username);
+        User user = loginRepo.findByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found!");
+        }
+        log.info("Enter new password: ");
+        user.setPassword(Arrays.toString(System.console().readPassword()));
     }
 
     public void updateUser(User user) {

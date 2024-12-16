@@ -34,4 +34,13 @@ public class LoginResource {
         // TODO: jwt
         return loginService.checkPassword(username, password) ? Response.status(200).build() : Response.status(401).build();
     }
+
+    @GET
+    @Path("/resetpw")
+    @Authenticated // not so sure about that
+    public Response resetPassword(@QueryParam("username") String username) {
+        log.info("reset password");
+        loginService.resetPassword(username);
+        return Response.status(200).build();
+    }
 }
