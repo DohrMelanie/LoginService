@@ -80,7 +80,7 @@ public class LoginService {
         log.info("Deleting user: {}", id);
         User user = loginRepo.findById(id);
         if (user == null) {
-            throw new IllegalArgumentException("Car not found!");
+            throw new IllegalArgumentException("User not found!");
         }
         loginRepo.deleteUser(user);
     }
