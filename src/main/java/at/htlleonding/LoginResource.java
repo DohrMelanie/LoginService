@@ -20,7 +20,6 @@ public class LoginResource {
     @POST
     @Path("/register")
     public Response register(User user) {
-        // TODO: jwt ?
         log.info("register + hash and salt pw");
         loginService.addUser(user);
         return Response.status(201).build();
