@@ -1,3 +1,5 @@
+package at.htlleonding;
+
 import at.htlleonding.LoginPanacheRepository;
 import at.htlleonding.LoginService;
 import at.htlleonding.User;
