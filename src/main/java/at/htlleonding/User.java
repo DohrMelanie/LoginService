@@ -21,11 +21,11 @@ public class User {
     private UUID id;
 
     @NotNull
-    @Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$\n", message = "Email must be valid")
+    @Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", message = "Email must be valid") // intended 
     private String username;
 
     @NotNull
-    @Pattern(regexp= "^(\\+|)\\d+$\n", message = "Telephone number must be valid")
+    @Pattern(regexp= "^(\\+|)\\d+$", message = "Telephone number must be valid")
     private String telephoneNumber;
 
     @NotNull

@@ -1,5 +1,6 @@
 package at.htlleonding;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Header;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -12,7 +13,7 @@ import java.io.StringReader;
 import java.util.Base64;
 
 public class JWTService {
-    private static final String SECRET_KEY = System.getenv("SECRET_KEY");
+    private static final String SECRET_KEY =  Dotenv.load().get("SECRET_KEY");
 
     public static String generateToken(String username, int timeLimit_Min) {
         String header = Base64.getUrlEncoder()
@@ -51,7 +52,7 @@ public class JWTService {
             //check signature
             String expectedSignature = encryptHmac256(header + "." + payload);
             
-            if(!signature.equals(expectedSignature){
+            if(!signature.equals(expectedSignature)){
                 return false;
             }
             

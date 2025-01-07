@@ -38,8 +38,6 @@ public class LoginServiceTest {
 
     @BeforeEach
     void setUp() {
-        System.setProperty("PEPPER", "testPepper");
-
         userId = UUID.randomUUID();
         sampleUser = new User();
         sampleUser.setId(userId);

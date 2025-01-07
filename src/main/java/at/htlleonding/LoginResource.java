@@ -1,6 +1,7 @@
 package at.htlleonding;
 
 import io.quarkus.security.Authenticated;
+import io.vertx.codegen.doc.Token;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LoginResource {
     private final LoginService loginService;
+
     public LoginResource(@NotNull final LoginService loginService) {
         log.info("start");
         this.loginService = loginService;
@@ -27,16 +29,23 @@ public class LoginResource {
 
     @GET
     @Path("/login")
-    @Authenticated // NOTWENDIG für jwt
     public Response login(@QueryParam("username") String username, @QueryParam("password") String password) {
         log.info("login");
-        // TODO: jwt
-        return loginService.checkPassword(username, password) ? Response.status(200).build() : Response.status(401).build();
+        try {
+            if (loginService.checkPassword(username, password)) {
+                String token = JWTService.generateToken(username, 30);
+                return Response.ok().header("Authorization", "Bearer " + token).build();
+            } else {
+                return Response.status(401).build();
+            }
+        } catch (Exception e) {
+            return Response.status(401).build();
+        }
     }
 
     @GET
     @Path("/resetpw")
-    @Authenticated // not so sure about that
+    @JWTRequired //this enforces that the user send a jwt
     public Response resetPassword(@QueryParam("username") String username) {
         log.info("reset password");
         loginService.resetPassword(username);

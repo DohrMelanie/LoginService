@@ -1,5 +1,6 @@
 package at.htlleonding;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -26,14 +27,28 @@ public class LoginService {
 
     public void addUser(User user) {
         log.info("Adding user: {}", user.getId());
-        if (user.getPassword() == null || user.getPassword().isEmpty()
-            || user.getUsername() == null || user.getUsername().isEmpty()
-            || user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
+
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
             throw new IllegalArgumentException("Password must not be empty");
         }
+
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            throw new IllegalArgumentException("Username must not be empty");
+        }
+        
+        if (user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
+            throw new IllegalArgumentException("Username must not be empty");
+        }
+        
+
+        if (loginRepo.findByUsername(user.getUsername()) != null) {
+            throw new IllegalArgumentException("Username already exists!");
+        }
+
         user.setPassword(getPassword(user.getPassword()));
         loginRepo.persist(user);
     }
+
     // Generate a random 16-byte salt and encode it as a Base64 string
     private static String generateRandomSalt() {
         SecureRandom secureRandom = new SecureRandom();
@@ -41,10 +56,10 @@ public class LoginService {
         secureRandom.nextBytes(saltBytes);
         return Base64.getEncoder().encodeToString(saltBytes);
     }
+
     private String getPassword(String password) {
         Argon2 argon2 = Argon2Factory.create();
         String hash = argon2.hash(2, 65536, 1, password.toCharArray());
-        hash += generateRandomSalt() + System.getenv("PEPPER");
         return hash;
     }
 
@@ -52,17 +67,20 @@ public class LoginService {
         log.info("Checking password for user: {}", username);
         User user = loginRepo.findByUsername(username);
         if (user == null) {
-            throw new IllegalArgumentException("User not found!");
+            throw new IllegalArgumentException();
         }
         Argon2 argon2 = Argon2Factory.create();
         return argon2.verify(user.getPassword(), password.toCharArray());
     }
+
     public void resetPassword(String username) {
         log.info("Resetting password for user: {}", username);
         User user = loginRepo.findByUsername(username);
         if (user == null) {
             throw new IllegalArgumentException("User not found!");
         }
+        log.info("EMAIL SENDING TO: {}", user.getUsername());
+        log.info("Email: click this Link to enter a new password");
         log.info("Enter new password: ");
         user.setPassword(Arrays.toString(System.console().readPassword()));
     }
@@ -70,12 +88,13 @@ public class LoginService {
     public void updateUser(User user) {
         log.info("Updating user: {}", user.getId());
         if (user.getPassword() == null || user.getPassword().isEmpty()
-            || user.getUsername() == null || user.getUsername().isEmpty()
-            || user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
+                || user.getUsername() == null || user.getUsername().isEmpty()
+                || user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
             throw new IllegalArgumentException("Password must not be empty");
         }
         loginRepo.updateUser(user);
     }
+
     public void deleteUser(UUID id) {
         log.info("Deleting user: {}", id);
         User user = loginRepo.findById(id);
