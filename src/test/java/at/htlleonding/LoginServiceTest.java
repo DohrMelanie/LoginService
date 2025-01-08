@@ -1,14 +1,6 @@
 package at.htlleonding;
 
-import at.htlleonding.LoginPanacheRepository;
-import at.htlleonding.LoginService;
-import at.htlleonding.User;
-import de.mkammerer.argon2.Argon2Factory;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,8 +10,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.wildfly.common.Assert.assertNotNull;
@@ -31,19 +21,13 @@ public class LoginServiceTest {
     LoginPanacheRepository loginRepo;
 
     @InjectMocks
-    LoginService loginService;
+    static LoginService loginService;
 
-    private User sampleUser;
-    private UUID userId;
+    private static User sampleUser;
 
     @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
-        sampleUser = new User();
-        sampleUser.setId(userId);
-        sampleUser.setUsername("testUser");
-        sampleUser.setPassword("secret");
-        sampleUser.setTelephoneNumber("12345");
+    public void setUpAll() {
+        sampleUser = new User("testUser", LoginService.getPassword("secret"), "12345");
     }
 
     @Nested
@@ -52,22 +36,22 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should return user when found by ID")
         void testGetUserById_Found() {
-            when(loginRepo.findById(userId)).thenReturn(sampleUser);
+            when(loginRepo.findById(sampleUser.getId())).thenReturn(sampleUser);
 
-            User foundUser = loginService.getUserById(userId);
+            User foundUser = loginService.getUserById(sampleUser.getId());
             assertNotNull(foundUser);
-            assertEquals(userId, foundUser.getId());
-            verify(loginRepo).findById(userId);
+            assertEquals(sampleUser.getId(), foundUser.getId());
+            verify(loginRepo).findById(sampleUser.getId());
         }
 
         @Test
         @DisplayName("Should return null when user not found")
         void testGetUserById_NotFound() {
-            when(loginRepo.findById(userId)).thenReturn(null);
+            when(loginRepo.findById(sampleUser.getId())).thenReturn(null);
 
-            User foundUser = loginService.getUserById(userId);
+            User foundUser = loginService.getUserById(sampleUser.getId());
             assertNull(foundUser);
-            verify(loginRepo).findById(userId);
+            verify(loginRepo).findById(sampleUser.getId());
         }
     }
 
@@ -84,6 +68,7 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should throw exception when password is empty")
         void testAddUser_EmptyPassword() {
+            String password = sampleUser.getPassword();
             sampleUser.setPassword("");
             assertThrows(IllegalArgumentException.class, () -> loginService.addUser(sampleUser));
             verify(loginRepo, never()).persist(any(User.class));
@@ -92,6 +77,7 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should throw exception when username is empty")
         void testAddUser_EmptyUsername() {
+            String username = sampleUser.getUsername();
             sampleUser.setUsername("");
             assertThrows(IllegalArgumentException.class, () -> loginService.addUser(sampleUser));
             verify(loginRepo, never()).persist(any(User.class));
@@ -100,6 +86,7 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should throw exception when telephone number is empty")
         void testAddUser_EmptyTelephoneNumber() {
+            String telephoneNumber = sampleUser.getTelephoneNumber();
             sampleUser.setTelephoneNumber("");
             assertThrows(IllegalArgumentException.class, () -> loginService.addUser(sampleUser));
             verify(loginRepo, never()).persist(any(User.class));
@@ -176,18 +163,18 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should delete user if found")
         void testDeleteUser_Found() {
-            when(loginRepo.findById(userId)).thenReturn(sampleUser);
+            when(loginRepo.findById(sampleUser.getId())).thenReturn(sampleUser);
 
-            loginService.deleteUser(userId);
+            loginService.deleteUser(sampleUser.getId());
             verify(loginRepo).deleteUser(sampleUser);
         }
 
         @Test
         @DisplayName("Should throw exception if user not found")
         void testDeleteUser_NotFound() {
-            when(loginRepo.findById(userId)).thenReturn(null);
+            when(loginRepo.findById(sampleUser.getId())).thenReturn(null);
 
-            assertThrows(IllegalArgumentException.class, () -> loginService.deleteUser(userId));
+            assertThrows(IllegalArgumentException.class, () -> loginService.deleteUser(sampleUser.getId()));
             verify(loginRepo, never()).deleteUser(any(User.class));
         }
     }

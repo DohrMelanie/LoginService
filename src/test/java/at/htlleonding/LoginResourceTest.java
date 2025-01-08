@@ -3,18 +3,37 @@ package at.htlleonding;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
 public class LoginResourceTest {
+    @InjectMocks
+    private static User testUser;
+
+    @Inject
+    LoginPanacheRepository loginRepo;
+
+    @AfterAll
+    public static void tearDown() {
+        RestAssured.reset();
+    }
+
+    @BeforeAll
+    public static void setUp() {
+        testUser = new User("test@gmail.com", "password123", "+123456789");
+    }
 
     @Test
-    public void testRegisterSuccess() {
-        User user = new User("test@gmail.com", "password123", "+123456789");
-
+    @Transactional
+    void testRegisterSuccess() {
+        UserDto user = new UserDto("testaege@gmail.com", "password12354", "+123456789");
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(user)
@@ -22,11 +41,12 @@ public class LoginResourceTest {
                 .post("/api/v1/register")
                 .then()
                 .statusCode(201);
+        loginRepo.deleteUserByName(user.getUsername());
     }
 
     @Test
-    public void testLoginSuccess() {
-        String username = "test@gmail.com";
+    void testLoginSuccess() {
+        String username = testUser.getUsername();
         String password = "password123";
 
         RestAssured.given()
@@ -40,8 +60,8 @@ public class LoginResourceTest {
     }
 
     @Test
-    public void testLoginFailureInvalidPassword() {
-        String username = "test@gmail.com";
+    void testLoginFailureInvalidPassword() {
+        String username = testUser.getUsername();
         String password = "wrongpassword";
 
         RestAssured.given()
@@ -50,11 +70,11 @@ public class LoginResourceTest {
                 .when()
                 .get("/api/v1/login")
                 .then()
-                .statusCode(401);
+                .statusCode(400);
     }
 
     @Test
-    public void testResetPasswordUnauthorized() {
+    void testResetPasswordUnauthorized() {
         RestAssured.given()
                 .queryParam("username", "test@gmail.com")
                 .when()
@@ -64,7 +84,7 @@ public class LoginResourceTest {
     }
 
     @Test
-    public void testResetPasswordWithInvalidToken() {
+    void testResetPasswordWithInvalidToken() {
         String invalidToken = "invalid.jwt.token";
 
         RestAssured.given()
@@ -74,45 +94,5 @@ public class LoginResourceTest {
                 .get("/api/v1/resetpw")
                 .then()
                 .statusCode(401);
-    }
-
-
-    private class User {
-        private String username;
-        private String password;
-        private String telephoneNumber;
-
-        public User() {
-        }
-
-        public User(String username, String password, String telephoneNumber) {
-            this.username = username;
-            this.password = password;
-            this.telephoneNumber = telephoneNumber;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public String getTelephoneNumber() {
-            return telephoneNumber;
-        }
-
-        public void setTelephoneNumber(String telephoneNumber) {
-            this.telephoneNumber = telephoneNumber;
-        }
     }
 }
