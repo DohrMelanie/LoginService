@@ -13,6 +13,9 @@ public class LoginPanacheRepository implements PanacheRepositoryBase<User, UUID>
     public void deleteUser(User user) {
         getEntityManager().remove(user);
     }
+    public void deleteUserByName(String username) {
+        getEntityManager().remove(findByUsername(username));
+    }
     public User findByUsername(String username) {
         return find("username", username).firstResult();
     }

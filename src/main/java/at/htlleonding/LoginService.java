@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
-import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -26,19 +24,17 @@ public class LoginService {
     }
 
     public void addUser(User user) {
-        log.info("Adding user: {}", user.getId());
-
+        log.info("Adding user: {}", user.getUsername());
         checkArguments(user);
 
         if (loginRepo.findByUsername(user.getUsername()) != null) {
             throw new IllegalArgumentException("Username already exists!");
         }
-
         user.setPassword(getPassword(user.getPassword()));
         loginRepo.persist(user);
     }
 
-    String getPassword(String password) {
+    static String getPassword(String password) {
         password += Dotenv.load().get("PEPPER");
         Argon2 argon2 = Argon2Factory.create();
         return argon2.hash(2, 65536, 1, password.toCharArray()); // The generated hash includes the salt automatically

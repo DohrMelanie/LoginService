@@ -11,7 +11,6 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode
 @Entity
 @Table(name = "users")
@@ -30,4 +29,10 @@ public class User {
 
     @NotNull
     private String password;
+
+    public User(String username, String password, String telephoneNumber) {
+        this.username = username;
+        this.password = password;
+        this.telephoneNumber = telephoneNumber;
+    }
 }

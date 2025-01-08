@@ -21,10 +21,10 @@ public class LoginResource {
 
     @POST
     @Path("/register")
-    public Response register(User user) {
+    public Response register(UserDto user) {
         log.info("register + hash and salt pw");
         try {
-            loginService.addUser(user);
+            loginService.addUser(new User(user.getUsername(), user.getPassword(), user.getTelephoneNumber()));
         } catch(IllegalArgumentException e) {
             return Response.status(400, e.getMessage()).build();
         }
@@ -35,6 +35,7 @@ public class LoginResource {
     @Path("/login")
     public Response login(@QueryParam("username") String username, @QueryParam("password") String password) {
         log.info("login");
+        log.info("password: " + password);
         try {
             if (loginService.checkPassword(username, password)) {
                 String token = JWTService.generateToken(username, 30);
@@ -51,7 +52,7 @@ public class LoginResource {
 
     @GET
     @Path("/resetpw")
-    @JWTRequired //this enforces that the user send a jwt
+    @JWTRequired //this enforces that the user sends a jwt
     public Response resetPassword(@QueryParam("username") String username) {
         log.info("reset password");
         loginService.resetPassword(username);
