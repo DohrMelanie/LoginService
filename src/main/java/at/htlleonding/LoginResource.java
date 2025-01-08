@@ -1,7 +1,7 @@
 package at.htlleonding;
 
-import io.quarkus.security.Authenticated;
-import io.vertx.codegen.doc.Token;
+import at.htlleonding.jwt.JWTRequired;
+import at.htlleonding.jwt.JWTService;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;

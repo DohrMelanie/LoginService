@@ -91,4 +91,12 @@ public class LoginService {
         }
         loginRepo.deleteUser(user);
     }
+
+    public void deleteUserByName(String username) {
+        log.info("Deleting user: {}", username);
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username must not be empty");
+        }
+        loginRepo.deleteUserByName(username);
+    }
 }

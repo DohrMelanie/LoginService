@@ -4,21 +4,16 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.*;
 
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
 public class LoginResourceTest {
-    @InjectMocks
-    private static User testUser;
+    static User testUser;
 
     @Inject
-    LoginPanacheRepository loginRepo;
+    LoginService loginService;
 
     @AfterAll
     public static void tearDown() {
@@ -31,7 +26,6 @@ public class LoginResourceTest {
     }
 
     @Test
-    @Transactional
     void testRegisterSuccess() {
         UserDto user = new UserDto("testaege@gmail.com", "password12354", "+123456789");
         RestAssured.given()
@@ -41,11 +35,12 @@ public class LoginResourceTest {
                 .post("/api/v1/register")
                 .then()
                 .statusCode(201);
-        loginRepo.deleteUserByName(user.getUsername());
     }
 
     @Test
     void testLoginSuccess() {
+        loginService.addUser(testUser);
+
         String username = testUser.getUsername();
         String password = "password123";
 
@@ -57,6 +52,7 @@ public class LoginResourceTest {
                 .then()
                 .statusCode(200)
                 .header("Authorization", startsWith("Bearer"));
+        loginService.deleteUserByName(testUser.getUsername());
     }
 
     @Test
@@ -86,7 +82,6 @@ public class LoginResourceTest {
     @Test
     void testResetPasswordWithInvalidToken() {
         String invalidToken = "invalid.jwt.token";
-
         RestAssured.given()
                 .header("Authorization", "Bearer " + invalidToken)
                 .queryParam("username", "test@gmail.com")
@@ -95,4 +90,6 @@ public class LoginResourceTest {
                 .then()
                 .statusCode(401);
     }
+
+    // Success Test for reset password not possible because of the console input
 }

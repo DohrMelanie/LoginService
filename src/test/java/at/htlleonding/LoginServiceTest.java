@@ -16,7 +16,6 @@ import static org.wildfly.common.Assert.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 public class LoginServiceTest {
-
     @Mock
     LoginPanacheRepository loginRepo;
 
@@ -68,7 +67,6 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should throw exception when password is empty")
         void testAddUser_EmptyPassword() {
-            String password = sampleUser.getPassword();
             sampleUser.setPassword("");
             assertThrows(IllegalArgumentException.class, () -> loginService.addUser(sampleUser));
             verify(loginRepo, never()).persist(any(User.class));
@@ -77,7 +75,6 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should throw exception when username is empty")
         void testAddUser_EmptyUsername() {
-            String username = sampleUser.getUsername();
             sampleUser.setUsername("");
             assertThrows(IllegalArgumentException.class, () -> loginService.addUser(sampleUser));
             verify(loginRepo, never()).persist(any(User.class));
@@ -86,7 +83,6 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should throw exception when telephone number is empty")
         void testAddUser_EmptyTelephoneNumber() {
-            String telephoneNumber = sampleUser.getTelephoneNumber();
             sampleUser.setTelephoneNumber("");
             assertThrows(IllegalArgumentException.class, () -> loginService.addUser(sampleUser));
             verify(loginRepo, never()).persist(any(User.class));
@@ -176,6 +172,21 @@ public class LoginServiceTest {
 
             assertThrows(IllegalArgumentException.class, () -> loginService.deleteUser(sampleUser.getId()));
             verify(loginRepo, never()).deleteUser(any(User.class));
+        }
+
+        @Test
+        @DisplayName("Should delete user by username")
+        void testDeleteUserByName() {
+            loginService.deleteUserByName(sampleUser.getUsername());
+            verify(loginRepo).deleteUserByName(sampleUser.getUsername());
+        }
+
+        @Test
+        @DisplayName("Should throw exception if username is empty")
+        void testDeleteUserByName_EmptyUsername() {
+            sampleUser.setUsername("");
+            assertThrows(IllegalArgumentException.class, () -> loginService.deleteUserByName(sampleUser.getUsername()));
+            verify(loginRepo, never()).deleteUserByName(any(String.class));
         }
     }
 }

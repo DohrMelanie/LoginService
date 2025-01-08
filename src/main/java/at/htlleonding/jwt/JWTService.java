@@ -1,11 +1,9 @@
-package at.htlleonding;
+package at.htlleonding.jwt;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import io.jsonwebtoken.Header;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
-
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -15,12 +13,12 @@ import java.util.Base64;
 public class JWTService {
     private static final String SECRET_KEY =  Dotenv.load().get("SECRET_KEY");
 
-    public static String generateToken(String username, int timeLimit_Min) {
+    public static String generateToken(String username, int minTimeLimit) {
         String header = Base64.getUrlEncoder()
                 .withoutPadding()
                 .encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes());
 
-        long expirationTime = (System.currentTimeMillis() / 1000) + (timeLimit_Min * 60);
+        long expirationTime = (System.currentTimeMillis() / 1000) + (minTimeLimit * 60L);
 
         String payload = Base64.getUrlEncoder()
                 .withoutPadding()
@@ -38,7 +36,7 @@ public class JWTService {
     }
 
     public static boolean verifyToken(String token) {
-        String[] parts = token.split("\\."); //why it gotta use regexxxxxxxxxxx
+        String[] parts = token.split("\\.");
 
         if (parts.length != 3) {
             return false;
