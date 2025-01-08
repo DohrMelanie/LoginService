@@ -120,8 +120,7 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should return true when password matches")
         void testCheckPassword_Success() {
-            String hashedPassword = Argon2Factory.create().hash(2, 65536, 1, "secret".toCharArray());
-            sampleUser.setPassword(hashedPassword);
+            sampleUser.setPassword(loginService.getPassword("secret"));
 
             when(loginRepo.findByUsername("testUser")).thenReturn(sampleUser);
             
@@ -132,8 +131,7 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should return false when password does not match")
         void testCheckPassword_Failure() {
-            String hashedPassword = Argon2Factory.create().hash(2, 65536, 1, "secret".toCharArray());
-            sampleUser.setPassword(hashedPassword);
+            sampleUser.setPassword(loginService.getPassword("secret"));
             when(loginRepo.findByUsername("testUser")).thenReturn(sampleUser);
 
             boolean result = loginService.checkPassword("testUser", "wrongPassword");

@@ -23,7 +23,11 @@ public class LoginResource {
     @Path("/register")
     public Response register(User user) {
         log.info("register + hash and salt pw");
-        loginService.addUser(user);
+        try {
+            loginService.addUser(user);
+        } catch(IllegalArgumentException e) {
+            return Response.status(400, e.getMessage()).build();
+        }
         return Response.status(201).build();
     }
 
@@ -36,8 +40,10 @@ public class LoginResource {
                 String token = JWTService.generateToken(username, 30);
                 return Response.ok().header("Authorization", "Bearer " + token).build();
             } else {
-                return Response.status(401).build();
+                return Response.status(400).build();
             }
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).build();
         } catch (Exception e) {
             return Response.status(401).build();
         }

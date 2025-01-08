@@ -28,18 +28,7 @@ public class LoginService {
     public void addUser(User user) {
         log.info("Adding user: {}", user.getId());
 
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Password must not be empty");
-        }
-
-        if (user.getUsername() == null || user.getUsername().isEmpty()) {
-            throw new IllegalArgumentException("Username must not be empty");
-        }
-        
-        if (user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
-            throw new IllegalArgumentException("Username must not be empty");
-        }
-        
+        checkArguments(user);
 
         if (loginRepo.findByUsername(user.getUsername()) != null) {
             throw new IllegalArgumentException("Username already exists!");
@@ -49,18 +38,10 @@ public class LoginService {
         loginRepo.persist(user);
     }
 
-    // Generate a random 16-byte salt and encode it as a Base64 string
-    private static String generateRandomSalt() {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] saltBytes = new byte[16];
-        secureRandom.nextBytes(saltBytes);
-        return Base64.getEncoder().encodeToString(saltBytes);
-    }
-
-    private String getPassword(String password) {
+    String getPassword(String password) {
+        password += Dotenv.load().get("PEPPER");
         Argon2 argon2 = Argon2Factory.create();
-        String hash = argon2.hash(2, 65536, 1, password.toCharArray());
-        return hash;
+        return argon2.hash(2, 65536, 1, password.toCharArray()); // The generated hash includes the salt automatically
     }
 
     public boolean checkPassword(String username, String password) {
@@ -70,6 +51,7 @@ public class LoginService {
             throw new IllegalArgumentException();
         }
         Argon2 argon2 = Argon2Factory.create();
+        password += Dotenv.load().get("PEPPER");
         return argon2.verify(user.getPassword(), password.toCharArray());
     }
 
@@ -82,17 +64,27 @@ public class LoginService {
         log.info("EMAIL SENDING TO: {}", user.getUsername());
         log.info("Email: click this Link to enter a new password");
         log.info("Enter new password: ");
-        user.setPassword(Arrays.toString(System.console().readPassword()));
+        user.setPassword(getPassword(Arrays.toString(System.console().readPassword())));
     }
 
     public void updateUser(User user) {
         log.info("Updating user: {}", user.getId());
-        if (user.getPassword() == null || user.getPassword().isEmpty()
-                || user.getUsername() == null || user.getUsername().isEmpty()
-                || user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
+        checkArguments(user);
+        loginRepo.updateUser(user);
+    }
+
+    private void checkArguments(User user) {
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
             throw new IllegalArgumentException("Password must not be empty");
         }
-        loginRepo.updateUser(user);
+
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            throw new IllegalArgumentException("Username must not be empty");
+        }
+
+        if (user.getTelephoneNumber() == null || user.getTelephoneNumber().isEmpty()) {
+            throw new IllegalArgumentException("Telephone Number must not be empty");
+        }
     }
 
     public void deleteUser(UUID id) {
