@@ -28,6 +28,7 @@ public class LoginResourceTest {
     @Test
     void testRegisterSuccess() {
         UserDto user = new UserDto("testaege@gmail.com", "password12354", "+123456789");
+        
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(user)
@@ -35,6 +36,8 @@ public class LoginResourceTest {
                 .post("/api/v1/register")
                 .then()
                 .statusCode(201);
+        
+        loginService.deleteUserByName(user.getUsername());
     }
 
     @Test
@@ -52,6 +55,7 @@ public class LoginResourceTest {
                 .then()
                 .statusCode(200)
                 .header("Authorization", startsWith("Bearer"));
+        
         loginService.deleteUserByName(testUser.getUsername());
     }
 
@@ -82,6 +86,7 @@ public class LoginResourceTest {
     @Test
     void testResetPasswordWithInvalidToken() {
         String invalidToken = "invalid.jwt.token";
+        
         RestAssured.given()
                 .header("Authorization", "Bearer " + invalidToken)
                 .queryParam("username", "test@gmail.com")

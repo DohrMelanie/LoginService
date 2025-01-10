@@ -26,7 +26,7 @@ public class LoginServiceTest {
 
     @BeforeEach
     public void setUpAll() {
-        sampleUser = new User("testUser", LoginService.getPassword("secret"), "12345");
+        sampleUser = new User("testUser", LoginService.encryptPassword("secret"), "12345");
     }
 
     @Nested
@@ -103,7 +103,7 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should return true when password matches")
         void testCheckPassword_Success() {
-            sampleUser.setPassword(loginService.getPassword("secret"));
+            sampleUser.setPassword(loginService.encryptPassword("secret"));
 
             when(loginRepo.findByUsername("testUser")).thenReturn(sampleUser);
             
@@ -114,7 +114,7 @@ public class LoginServiceTest {
         @Test
         @DisplayName("Should return false when password does not match")
         void testCheckPassword_Failure() {
-            sampleUser.setPassword(loginService.getPassword("secret"));
+            sampleUser.setPassword(loginService.encryptPassword("secret"));
             when(loginRepo.findByUsername("testUser")).thenReturn(sampleUser);
 
             boolean result = loginService.checkPassword("testUser", "wrongPassword");

@@ -25,7 +25,7 @@ public class LoginResource {
         log.info("register + hash and salt pw");
         try {
             loginService.addUser(new User(user.getUsername(), user.getPassword(), user.getTelephoneNumber()));
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return Response.status(400, e.getMessage()).build();
         }
         return Response.status(201).build();
@@ -35,7 +35,7 @@ public class LoginResource {
     @Path("/login")
     public Response login(@QueryParam("username") String username, @QueryParam("password") String password) {
         log.info("login");
-        log.info("password: " + password);
+        log.info("password: {}", password);
         try {
             if (loginService.checkPassword(username, password)) {
                 String token = JWTService.generateToken(username, 30);

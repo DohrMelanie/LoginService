@@ -30,11 +30,11 @@ public class LoginService {
         if (loginRepo.findByUsername(user.getUsername()) != null) {
             throw new IllegalArgumentException("Username already exists!");
         }
-        user.setPassword(getPassword(user.getPassword()));
+        user.setPassword(encryptPassword(user.getPassword()));
         loginRepo.persist(user);
     }
 
-    static String getPassword(String password) {
+    static String encryptPassword(String password) {
         password += Dotenv.load().get("PEPPER");
         Argon2 argon2 = Argon2Factory.create();
         return argon2.hash(2, 65536, 1, password.toCharArray()); // The generated hash includes the salt automatically
@@ -60,7 +60,7 @@ public class LoginService {
         log.info("EMAIL SENDING TO: {}", user.getUsername());
         log.info("Email: click this Link to enter a new password");
         log.info("Enter new password: ");
-        user.setPassword(getPassword(Arrays.toString(System.console().readPassword())));
+        user.setPassword(encryptPassword(Arrays.toString(System.console().readPassword())));
     }
 
     public void updateUser(User user) {
