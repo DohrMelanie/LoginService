@@ -1,12 +1,13 @@
 package at.htlleonding;
 
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import de.mkammerer.argon2.Argon2;
-import de.mkammerer.argon2.Argon2Factory;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -17,6 +18,9 @@ import java.util.UUID;
 public class LoginService {
     @Inject
     LoginPanacheRepository loginRepo;
+
+    @ConfigProperty(name = "mypeper")
+    String myPepper;
 
     public User getUserById(UUID id) {
         log.info("Getting user by id: {}", id);
