@@ -15,6 +15,15 @@ import java.util.UUID;
 @Slf4j
 @Transactional
 public class LoginService {
+    public static class Argon2Singleton {
+        private static class Holder {
+            private static final Argon2 INSTANCE = Argon2Factory.create();
+        }
+        private Argon2Singleton() {}
+        public static Argon2 getInstance() {
+            return Holder.INSTANCE;
+        }
+    }
     @Inject
     LoginPanacheRepository loginRepo;
 
@@ -36,7 +45,7 @@ public class LoginService {
 
     static String encryptPassword(String password) {
         password += Dotenv.load().get("PEPPER");
-        Argon2 argon2 = Argon2Factory.create();
+        Argon2 argon2 = Argon2Singleton.getInstance();
         return argon2.hash(2, 65536, 1, password.toCharArray()); // The generated hash includes the salt automatically
     }
 
@@ -46,7 +55,7 @@ public class LoginService {
         if (user == null) {
             throw new IllegalArgumentException();
         }
-        Argon2 argon2 = Argon2Factory.create();
+        Argon2 argon2 = Argon2Singleton.getInstance();
         password += Dotenv.load().get("PEPPER");
         return argon2.verify(user.getPassword(), password.toCharArray());
     }
