@@ -1,6 +1,8 @@
 package at.htlleonding.jwt;
 
-import io.github.cdimascio.dotenv.Dotenv;
+import at.htlleonding.CredentialManager;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
@@ -10,10 +12,13 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.StringReader;
 import java.util.Base64;
 
+@ApplicationScoped
 public class JWTService {
-    private static final String SECRET_KEY =  Dotenv.load().get("SECRET_KEY");
 
-    public static String generateToken(String username, int minTimeLimit) {
+    @Inject
+    private CredentialManager credentialManager;
+    
+    public String generateToken(String username, int minTimeLimit) {
         String header = Base64.getUrlEncoder()
                 .withoutPadding()
                 .encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes());
@@ -35,7 +40,7 @@ public class JWTService {
         }
     }
 
-    public static boolean verifyToken(String token) {
+    public boolean verifyToken(String token) {
         String[] parts = token.split("\\.");
 
         if (parts.length != 3) {
@@ -49,28 +54,28 @@ public class JWTService {
         try {
             //check signature
             String expectedSignature = encryptHmac256(header + "." + payload);
-            
-            if(!signature.equals(expectedSignature)){
+
+            if (!signature.equals(expectedSignature)) {
                 return false;
             }
-            
+
             //check expiration date
             String decodedPayload = new String(Base64.getUrlDecoder().decode(payload));
             JsonReader jsonReader = Json.createReader(new StringReader(decodedPayload));
             JsonObject payloadJson = jsonReader.readObject();
             jsonReader.close();
-            
+
             long exp = payloadJson.getJsonNumber("exp").longValue();
             return System.currentTimeMillis() / 1000 < exp;
-            
+
         } catch (Exception e) {
             throw new RuntimeException("Error verifying the token", e);
         }
     }
 
-    private static String encryptHmac256(String data) throws Exception {
+    private String encryptHmac256(String data) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKeySpec = new SecretKeySpec(SECRET_KEY.getBytes(), "HmacSHA256");
+        SecretKeySpec secretKeySpec = new SecretKeySpec(credentialManager.getPepper().getBytes(), "HmacSHA256");
         mac.init(secretKeySpec);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(data.getBytes()));
     }
