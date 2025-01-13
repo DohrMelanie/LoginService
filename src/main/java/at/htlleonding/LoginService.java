@@ -43,11 +43,7 @@ public class LoginService {
         user.setPassword(encryptPassword(user.getPassword()));
         loginRepo.persist(user);
     }
-<<<<<<< Updated upstream
-    
-=======
 
->>>>>>> Stashed changes
     String encryptPassword(String password) {
         password += password + credentialManager.getPepper();
         Argon2 argon2 = Argon2Factory.create();
@@ -60,7 +56,6 @@ public class LoginService {
         if (user == null) {
             throw new IllegalArgumentException();
         }
-
         Argon2 argon2 = Argon2Factory.create();
         password += credentialManager.getPepper();
         return argon2.verify(user.getPassword(), password.toCharArray());
