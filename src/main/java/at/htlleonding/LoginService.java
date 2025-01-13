@@ -27,7 +27,7 @@ public class LoginService {
     LoginPanacheRepository loginRepo;
 
     @Inject
-     CredentialManager credentialManager;
+    CredentialManager credentialManager;
 
     public User getUserById(UUID id) {
         log.info("Getting user by id: {}", id);
@@ -45,15 +45,9 @@ public class LoginService {
         loginRepo.persist(user);
     }
 
-<<<<<<< Updated upstream
-    static String encryptPassword(String password) {
-        password += Dotenv.load().get("PEPPER");
-        Argon2 argon2 = Argon2Singleton.getInstance();
-=======
     String encryptPassword(String password) {
         password += password + credentialManager.getPepper();
-        Argon2 argon2 = Argon2Factory.create();
->>>>>>> Stashed changes
+        Argon2 argon2 = Argon2Singleton.getInstance();
         return argon2.hash(2, 65536, 1, password.toCharArray()); // The generated hash includes the salt automatically
     }
 
@@ -63,13 +57,8 @@ public class LoginService {
         if (user == null) {
             throw new IllegalArgumentException();
         }
-<<<<<<< Updated upstream
         Argon2 argon2 = Argon2Singleton.getInstance();
-        password += Dotenv.load().get("PEPPER");
-=======
-        Argon2 argon2 = Argon2Factory.create();
         password += credentialManager.getPepper();
->>>>>>> Stashed changes
         return argon2.verify(user.getPassword(), password.toCharArray());
     }
 

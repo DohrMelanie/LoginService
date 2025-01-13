@@ -45,13 +45,8 @@ public class LoginResource {
     public Response login(LoginDto user) {
         log.info("login");
         try {
-<<<<<<< Updated upstream
             if (loginService.checkPassword(user.getUsername(), user.getPassword())) {
-                String token = JWTService.generateToken(user.getUsername(), 30);
-=======
-            if (loginService.checkPassword(username, password)) {
-                String token = jwtService.generateToken(username, 30);
->>>>>>> Stashed changes
+                String token = jwtService.generateToken(user.getUsername(), 30);
                 return Response.ok().header("Authorization", "Bearer " + token).build();
             } else {
                 return Response.status(400).build();
