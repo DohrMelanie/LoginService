@@ -33,7 +33,6 @@ public class LoginServiceTest {
         sampleUserWithCode = new User("testUser2", loginService.encryptPassword("secret"), "12345");
         sampleUserWithCode.setResetCode("resetCode");
     }
-
     @Nested
     @DisplayName("getUserById tests")
     class GetUserByIdTests {
@@ -66,7 +65,7 @@ public class LoginServiceTest {
         @DisplayName("Should add user successfully when valid")
         void testAddUser_Success() {
             loginService.addUser(sampleUser);
-            verify(loginRepo).persist(any(User.class));
+            verify(loginRepo).addUser(any(User.class));
         }
 
         @Test

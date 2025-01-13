@@ -60,7 +60,6 @@ public class LoginResource {
 
     @GET
     @Path("/resetpw/{username}")
-    @JWTRequired //this enforces that the user sends a jwt
     public Response resetPassword(@PathParam("username") String username) {
         log.info("reset password");
         String code = loginService.resetPassword(username);

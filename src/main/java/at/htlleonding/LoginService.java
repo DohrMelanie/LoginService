@@ -46,7 +46,7 @@ public class LoginService {
             throw new IllegalArgumentException("Username already exists!");
         }
         user.setPassword(encryptPassword(user.getPassword()));
-        loginRepo.persist(user);
+        loginRepo.addUser(user);
     }
 
     String encryptPassword(String password) {
