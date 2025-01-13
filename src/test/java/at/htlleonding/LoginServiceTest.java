@@ -12,6 +12,7 @@ import static org.mockito.Mockito.*;
 import static org.wildfly.common.Assert.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
+@QuarkusTest
 public class LoginServiceTest {
     @Mock
     LoginPanacheRepository loginRepo;
@@ -25,8 +26,8 @@ public class LoginServiceTest {
 
     @BeforeEach
     public void setUpAll() {
-        sampleUser = new User("testUser", LoginService.encryptPassword("secret"), "12345");
-        sampleUserWithCode = new User("testUser2", LoginService.encryptPassword("secret"), "12345");
+        sampleUser = new User("testUser", loginService.encryptPassword("secret"), "12345");
+        sampleUserWithCode = new User("testUser2", loginService.encryptPassword("secret"), "12345");
         sampleUserWithCode.setResetCode("resetCode");
     }
 

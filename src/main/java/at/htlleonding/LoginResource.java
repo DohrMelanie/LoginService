@@ -8,6 +8,7 @@ import at.htlleonding.jwt.JWTService;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,10 +21,7 @@ public class LoginResource {
     
     @Inject
     private JWTService jwtService;
-
-    @Inject
-    private JWTService jwtService;
-
+    
     public LoginResource(@NotNull final LoginService loginService) {
         log.info("start");
         this.loginService = loginService;
@@ -41,14 +39,14 @@ public class LoginResource {
         return Response.status(201).build();
     }
 
-    @GET
+    @POST
     @Path("/login")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response login(LoginDto user) {
         log.info("login");
-        log.info("password: {}", password);
         try {
-            if (loginService.checkPassword(username, password)) {
-                String token = jwtService.generateToken(username, 30);
+            if (loginService.checkPassword(user.getUsername(), user.getPassword())) {
+                String token = jwtService.generateToken(user.getUsername(), 30);
                 return Response.ok().header("Authorization", "Bearer " + token).build();
             } else {
                 return Response.status(400).build();
@@ -69,7 +67,7 @@ public class LoginResource {
         return Response.ok(code).build();
     }
 
-    @GET
+    @POST
     @Path("/resetpw/code/")
     public Response resetPasswordWithCode(ResetPasswordDto resetPasswordDto) {
         log.info("reset password with code");
