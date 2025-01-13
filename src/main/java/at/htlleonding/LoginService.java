@@ -64,16 +64,32 @@ public class LoginService {
         return argon2.verify(user.getPassword(), password.toCharArray());
     }
 
-    public void resetPassword(String username) {
+    public String resetPassword(String username) {
         log.info("Resetting password for user: {}", username);
         User user = loginRepo.findByUsername(username);
         if (user == null) {
             throw new IllegalArgumentException("User not found!");
         }
         log.info("EMAIL SENDING TO: {}", user.getUsername());
-        log.info("Email: click this Link to enter a new password");
-        log.info("Enter new password: ");
-        user.setPassword(encryptPassword(Arrays.toString(System.console().readPassword())));
+        user.setResetCode(UUID.randomUUID().toString());
+        log.info("Email: reset code: {}", user.getResetCode());
+        return user.getResetCode();
+    }
+
+    public boolean resetPasswordWithCode(String username, String code, String password) {
+        log.info("Resetting password for user: {}", username);
+        User user = loginRepo.findByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found!");
+        }
+        if (user.getResetCode() == null || user.getResetCode().isEmpty()) {
+            throw new IllegalArgumentException("No reset code found!");
+        }
+        if (!user.getResetCode().equals(code)) {
+            return false;
+        }
+        user.setPassword(encryptPassword(password));
+        return true;
     }
 
     public void updateUser(User user) {

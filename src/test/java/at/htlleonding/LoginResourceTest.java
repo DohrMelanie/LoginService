@@ -1,5 +1,8 @@
 package at.htlleonding;
 
+import at.htlleonding.dtos.LoginDto;
+import at.htlleonding.dtos.RegisterDto;
+import at.htlleonding.dtos.ResetPasswordDto;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -27,7 +30,7 @@ public class LoginResourceTest {
 
     @Test
     void testRegisterSuccess() {
-        UserDto user = new UserDto("testaege@gmail.com", "password12354", "+123456789");
+        RegisterDto user = new RegisterDto("testaege@gmail.com", "password12354", "+123456789");
         
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -44,12 +47,8 @@ public class LoginResourceTest {
     void testLoginSuccess() {
         loginService.addUser(testUser);
 
-        String username = testUser.getUsername();
-        String password = "password123";
-
         RestAssured.given()
-                .queryParam("username", username)
-                .queryParam("password", password)
+                .body(new LoginDto(testUser.getUsername(), "password123"))
                 .when()
                 .get("/api/v1/login")
                 .then()
@@ -61,12 +60,8 @@ public class LoginResourceTest {
 
     @Test
     void testLoginFailureInvalidPassword() {
-        String username = testUser.getUsername();
-        String password = "wrongpassword";
-
         RestAssured.given()
-                .queryParam("username", username)
-                .queryParam("password", password)
+                .body(new LoginDto(testUser.getUsername(), "wrongpassword"))
                 .when()
                 .get("/api/v1/login")
                 .then()
@@ -74,27 +69,33 @@ public class LoginResourceTest {
     }
 
     @Test
-    void testResetPasswordUnauthorized() {
+    void testResetPassword() {
+        loginService.addUser(testUser);
+
         RestAssured.given()
-                .queryParam("username", "test@gmail.com")
+                .pathParam("username", testUser.getUsername())
                 .when()
-                .get("/api/v1/resetpw")
+                .get("/api/v1/resetpw/{username}")
                 .then()
-                .statusCode(401);
+                .statusCode(200)
+                .body(is(not(emptyString())));
+
+        loginService.deleteUserByName(testUser.getUsername());
     }
 
     @Test
-    void testResetPasswordWithInvalidToken() {
-        String invalidToken = "invalid.jwt.token";
-        
-        RestAssured.given()
-                .header("Authorization", "Bearer " + invalidToken)
-                .queryParam("username", "test@gmail.com")
-                .when()
-                .get("/api/v1/resetpw")
-                .then()
-                .statusCode(401);
-    }
+    void testResetPasswordWithCode() {
+        loginService.addUser(testUser);
+        String resetCode = loginService.resetPassword(testUser.getUsername());
 
-    // Success Test for reset password not possible because of the console input
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(new ResetPasswordDto(testUser.getUsername(), resetCode, "newPassword"))
+                .when()
+                .get("/api/v1/resetpw/code/")
+                .then()
+                .statusCode(200);
+
+        loginService.deleteUserByName(testUser.getUsername());
+    }
 }

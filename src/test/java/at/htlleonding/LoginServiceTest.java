@@ -1,17 +1,14 @@
 package at.htlleonding;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.wildfly.common.Assert.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,9 +21,13 @@ public class LoginServiceTest {
 
     private static User sampleUser;
 
+    private static User sampleUserWithCode;
+
     @BeforeEach
     public void setUpAll() {
         sampleUser = new User("testUser", LoginService.encryptPassword("secret"), "12345");
+        sampleUserWithCode = new User("testUser2", LoginService.encryptPassword("secret"), "12345");
+        sampleUserWithCode.setResetCode("resetCode");
     }
 
     @Nested
@@ -131,6 +132,47 @@ public class LoginServiceTest {
             when(loginRepo.findByUsername("notExistingUser")).thenReturn(null);
             assertThrows(IllegalArgumentException.class,
                     () -> loginService.resetPassword("notExistingUser"));
+        }
+
+        @Test
+        @DisplayName("Should return reset code when user found")
+        void testResetPassword_Success() {
+            when(loginRepo.findByUsername("testUser")).thenReturn(sampleUser);
+
+            String resetCode = loginService.resetPassword("testUser");
+            assertNotNull(resetCode);
+            assertEquals(sampleUser.getResetCode(), resetCode);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user not exists")
+        void testResetPassword_UserNotExists() {
+            when(loginRepo.findByUsername("notExistingUser")).thenReturn(null);
+            assertThrows(IllegalArgumentException.class,
+                    () -> loginService.resetPassword("notExistingUser"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when user has no reset code")
+        void testResetPassword_NoResetCode() {
+            sampleUser.setResetCode(null);
+            when(loginRepo.findByUsername("testUser")).thenReturn(sampleUser);
+            assertThrows(IllegalArgumentException.class,
+                    () -> loginService.resetPasswordWithCode("testUser", "resetCode", "newPassword"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when invalid reset code")
+        void testResetPasswordWithCode_InvalidCode() {
+            when(loginRepo.findByUsername("testUser")).thenReturn(sampleUserWithCode);
+            assertFalse(loginService.resetPasswordWithCode("testUser", "invalidCode", "newPassword"));
+        }
+
+        @Test
+        @DisplayName("Should reset password successfully with valid reset code")
+        void testResetPasswordWithCode_Success() {
+            when(loginRepo.findByUsername("testUser2")).thenReturn(sampleUserWithCode);
+            assertTrue(loginService.resetPasswordWithCode("testUser2", "resetCode", "newPassword"));
         }
     }
 

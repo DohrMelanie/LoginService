@@ -30,6 +30,8 @@ public class User {
     @NotNull
     private String password;
 
+    private String resetCode;
+
     public User(String username, String password, String telephoneNumber) {
         this.username = username;
         this.password = password;

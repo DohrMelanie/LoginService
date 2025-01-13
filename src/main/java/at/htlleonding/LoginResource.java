@@ -1,5 +1,8 @@
 package at.htlleonding;
 
+import at.htlleonding.dtos.LoginDto;
+import at.htlleonding.dtos.RegisterDto;
+import at.htlleonding.dtos.ResetPasswordDto;
 import at.htlleonding.jwt.JWTRequired;
 import at.htlleonding.jwt.JWTService;
 import jakarta.validation.constraints.NotNull;
@@ -21,7 +24,7 @@ public class LoginResource {
 
     @POST
     @Path("/register")
-    public Response register(UserDto user) {
+    public Response register(RegisterDto user) {
         log.info("register + hash and salt pw");
         try {
             loginService.addUser(new User(user.getUsername(), user.getPassword(), user.getTelephoneNumber()));
@@ -33,12 +36,11 @@ public class LoginResource {
 
     @GET
     @Path("/login")
-    public Response login(@QueryParam("username") String username, @QueryParam("password") String password) {
+    public Response login(LoginDto user) {
         log.info("login");
-        log.info("password: {}", password);
         try {
-            if (loginService.checkPassword(username, password)) {
-                String token = JWTService.generateToken(username, 30);
+            if (loginService.checkPassword(user.getUsername(), user.getPassword())) {
+                String token = JWTService.generateToken(user.getUsername(), 30);
                 return Response.ok().header("Authorization", "Bearer " + token).build();
             } else {
                 return Response.status(400).build();
@@ -51,11 +53,26 @@ public class LoginResource {
     }
 
     @GET
-    @Path("/resetpw")
+    @Path("/resetpw/{username}")
     @JWTRequired //this enforces that the user sends a jwt
-    public Response resetPassword(@QueryParam("username") String username) {
+    public Response resetPassword(@PathParam("username") String username) {
         log.info("reset password");
-        loginService.resetPassword(username);
+        String code = loginService.resetPassword(username);
+        return Response.ok(code).build();
+    }
+
+    @GET
+    @Path("/resetpw/code/")
+    public Response resetPasswordWithCode(ResetPasswordDto resetPasswordDto) {
+        log.info("reset password with code");
+        try {
+            boolean success = loginService.resetPasswordWithCode(resetPasswordDto.getUsername(), resetPasswordDto.getResetCode(), resetPasswordDto.getNewPassword());
+            if (!success) {
+                return Response.status(400).build();
+            }
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).build();
+        }
         return Response.status(200).build();
     }
 }
