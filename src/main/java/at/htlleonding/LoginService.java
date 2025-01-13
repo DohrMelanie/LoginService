@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -44,16 +43,10 @@ public class LoginService {
         user.setPassword(encryptPassword(user.getPassword()));
         loginRepo.persist(user);
     }
-
-<<<<<<< Updated upstream
-    static String encryptPassword(String password) {
-        password += Dotenv.load().get("PEPPER");
-        Argon2 argon2 = Argon2Singleton.getInstance();
-=======
+    
     String encryptPassword(String password) {
         password += password + credentialManager.getPepper();
         Argon2 argon2 = Argon2Factory.create();
->>>>>>> Stashed changes
         return argon2.hash(2, 65536, 1, password.toCharArray()); // The generated hash includes the salt automatically
     }
 
@@ -63,13 +56,9 @@ public class LoginService {
         if (user == null) {
             throw new IllegalArgumentException();
         }
-<<<<<<< Updated upstream
-        Argon2 argon2 = Argon2Singleton.getInstance();
-        password += Dotenv.load().get("PEPPER");
-=======
+
         Argon2 argon2 = Argon2Factory.create();
         password += credentialManager.getPepper();
->>>>>>> Stashed changes
         return argon2.verify(user.getPassword(), password.toCharArray());
     }
 
