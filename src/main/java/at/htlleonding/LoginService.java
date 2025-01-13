@@ -7,7 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -18,11 +18,15 @@ public class LoginService {
         private static class Holder {
             private static final Argon2 INSTANCE = Argon2Factory.create();
         }
-        private Argon2Singleton() {}
+
+        private Argon2Singleton() {
+        }
+
         public static Argon2 getInstance() {
             return Holder.INSTANCE;
         }
     }
+
     @Inject
     LoginPanacheRepository loginRepo;
 
@@ -46,7 +50,7 @@ public class LoginService {
     }
 
     String encryptPassword(String password) {
-        password += password + credentialManager.getPepper();
+        password += credentialManager.getPepper();
         Argon2 argon2 = Argon2Singleton.getInstance();
         return argon2.hash(2, 65536, 1, password.toCharArray()); // The generated hash includes the salt automatically
     }
@@ -54,6 +58,7 @@ public class LoginService {
     public boolean checkPassword(String username, String password) {
         log.info("Checking password for user: {}", username);
         User user = loginRepo.findByUsername(username);
+        List<User> users = loginRepo.listAll();
         if (user == null) {
             throw new IllegalArgumentException();
         }
