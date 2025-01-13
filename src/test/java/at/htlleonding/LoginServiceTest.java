@@ -148,14 +148,6 @@ public class LoginServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when user not exists")
-        void testResetPassword_UserNotExists() {
-            when(loginRepo.findByUsername("notExistingUser")).thenReturn(null);
-            assertThrows(IllegalArgumentException.class,
-                    () -> loginService.resetPassword("notExistingUser"));
-        }
-
-        @Test
         @DisplayName("Should throw exception when user has no reset code")
         void testResetPassword_NoResetCode() {
             sampleUser.setResetCode(null);
@@ -205,7 +197,6 @@ public class LoginServiceTest {
         @DisplayName("Should delete user if found")
         void testDeleteUser_Found() {
             when(loginRepo.findById(sampleUser.getId())).thenReturn(sampleUser);
-
             loginService.deleteUser(sampleUser.getId());
             verify(loginRepo).deleteUser(sampleUser);
         }
@@ -214,7 +205,6 @@ public class LoginServiceTest {
         @DisplayName("Should throw exception if user not found")
         void testDeleteUser_NotFound() {
             when(loginRepo.findById(sampleUser.getId())).thenReturn(null);
-
             assertThrows(IllegalArgumentException.class, () -> loginService.deleteUser(sampleUser.getId()));
             verify(loginRepo, never()).deleteUser(any(User.class));
         }

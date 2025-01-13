@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -58,7 +57,6 @@ public class LoginService {
     public boolean checkPassword(String username, String password) {
         log.info("Checking password for user: {}", username);
         User user = loginRepo.findByUsername(username);
-        List<User> users = loginRepo.listAll();
         if (user == null) {
             throw new IllegalArgumentException();
         }

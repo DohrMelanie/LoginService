@@ -3,7 +3,6 @@ package at.htlleonding;
 import at.htlleonding.dtos.LoginDto;
 import at.htlleonding.dtos.RegisterDto;
 import at.htlleonding.dtos.ResetPasswordDto;
-import at.htlleonding.jwt.JWTRequired;
 import at.htlleonding.jwt.JWTService;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +19,7 @@ public class LoginResource {
     private final LoginService loginService;
     
     @Inject
-    private JWTService jwtService;
+    JWTService jwtService;
     
     public LoginResource(@NotNull final LoginService loginService) {
         log.info("start");

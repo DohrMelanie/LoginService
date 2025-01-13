@@ -1,23 +1,16 @@
 package at.htlleonding;
 
-
 import jakarta.enterprise.context.ApplicationScoped;
+import lombok.Getter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
+@Getter
 public class CredentialManager {
 
     @ConfigProperty(name = "pepper")
-    private String pepper;
+    String pepper;
 
     @ConfigProperty(name = "secret")
-    private String secret;
-
-    public String getPepper() {
-        return pepper;
-    }
-
-    public String getSecret() {
-        return secret;
-    }
+    String secret;
 }
