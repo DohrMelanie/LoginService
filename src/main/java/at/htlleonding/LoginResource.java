@@ -7,6 +7,7 @@ import at.htlleonding.jwt.JWTRequired;
 import at.htlleonding.jwt.JWTService;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,8 +35,9 @@ public class LoginResource {
         return Response.status(201).build();
     }
 
-    @GET
+    @POST
     @Path("/login")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response login(LoginDto user) {
         log.info("login");
         try {

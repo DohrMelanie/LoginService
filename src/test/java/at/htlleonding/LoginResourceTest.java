@@ -48,22 +48,24 @@ public class LoginResourceTest {
         loginService.addUser(testUser);
 
         RestAssured.given()
+                .contentType(ContentType.JSON)
                 .body(new LoginDto(testUser.getUsername(), "password123"))
                 .when()
-                .get("/api/v1/login")
+                .post("/api/v1/login")
                 .then()
                 .statusCode(200)
                 .header("Authorization", startsWith("Bearer"));
-        
+
         loginService.deleteUserByName(testUser.getUsername());
     }
 
     @Test
     void testLoginFailureInvalidPassword() {
         RestAssured.given()
+                .contentType(ContentType.JSON)
                 .body(new LoginDto(testUser.getUsername(), "wrongpassword"))
                 .when()
-                .get("/api/v1/login")
+                .post("/api/v1/login")
                 .then()
                 .statusCode(400);
     }
