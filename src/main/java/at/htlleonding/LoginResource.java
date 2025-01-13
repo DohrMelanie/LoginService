@@ -72,7 +72,7 @@ public class LoginResource {
         return Response.ok(code).build();
     }
 
-    @GET
+    @POST
     @Path("/resetpw/code/")
     public Response resetPasswordWithCode(ResetPasswordDto resetPasswordDto) {
         log.info("reset password with code");

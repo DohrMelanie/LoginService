@@ -75,9 +75,10 @@ public class LoginResourceTest {
         loginService.addUser(testUser);
 
         RestAssured.given()
+                .contentType(ContentType.JSON)
                 .pathParam("username", testUser.getUsername())
                 .when()
-                .get("/api/v1/resetpw/{username}")
+                .post("/api/v1/resetpw/{username}")
                 .then()
                 .statusCode(200)
                 .body(is(not(emptyString())));
@@ -94,7 +95,7 @@ public class LoginResourceTest {
                 .contentType(ContentType.JSON)
                 .body(new ResetPasswordDto(testUser.getUsername(), resetCode, "newPassword"))
                 .when()
-                .get("/api/v1/resetpw/code/")
+                .post("/api/v1/resetpw/code/")
                 .then()
                 .statusCode(200);
 
