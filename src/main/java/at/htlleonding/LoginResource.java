@@ -17,6 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LoginResource {
     private final LoginService loginService;
+    
+    @Inject
+    private JWTService jwtService;
 
     @Inject
     private JWTService jwtService;
@@ -45,7 +48,7 @@ public class LoginResource {
         log.info("password: {}", password);
         try {
             if (loginService.checkPassword(username, password)) {
-                String token = JWTService.generateToken(username, 30);
+                String token = jwtService.generateToken(username, 30);
                 return Response.ok().header("Authorization", "Bearer " + token).build();
             } else {
                 return Response.status(400).build();

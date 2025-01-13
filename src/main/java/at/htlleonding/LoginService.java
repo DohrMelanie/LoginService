@@ -43,7 +43,11 @@ public class LoginService {
         user.setPassword(encryptPassword(user.getPassword()));
         loginRepo.persist(user);
     }
+<<<<<<< Updated upstream
     
+=======
+
+>>>>>>> Stashed changes
     String encryptPassword(String password) {
         password += password + credentialManager.getPepper();
         Argon2 argon2 = Argon2Factory.create();
